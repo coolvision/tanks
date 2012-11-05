@@ -1,0 +1,11 @@
+MyStrategy
+*libfmod*
+*~
+of_root_config.make
+.settings
+.project
+*/obj/*.o
+*.d
+*.o
+*.*~
+
