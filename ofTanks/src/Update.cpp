@@ -1,5 +1,9 @@
-
 #include "TanksApp.h"
+
+TanksApp::TanksApp(const char* host, const char* port, const char* token) :
+        runner(host, port, token) {
+
+}
 
 void TanksApp::update() {
 

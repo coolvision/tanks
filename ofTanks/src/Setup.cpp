@@ -4,5 +4,8 @@
 void TanksApp::setup() {
 
     ofSetFrameRate(30);
+
+
+    runner.Setup();
 }
 

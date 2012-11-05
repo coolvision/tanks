@@ -1,10 +1,15 @@
-
 #pragma once
 
 #include <ofMain.h>
 
+#include "Runner.h"
+
 class TanksApp: public ofBaseApp {
 public:
+
+    TanksApp(const char* host, const char* port, const char* token);
+
+    Runner runner;
 
     void setup();
     void update();

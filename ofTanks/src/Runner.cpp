@@ -20,46 +20,52 @@ using namespace std;
 //	return 0;
 //}
 
-Runner::Runner(const char* host, const char* port, const char* token) : remote_process_client(host, atoi(port)), token(token) {
+Runner::Runner(const char* host, const char* port, const char* token) :
+        remote_process_client(host, atoi(port)), token(token) {
 }
 
-void Runner::Run() {
-	remote_process_client.WriteToken(token);
-    int team_size = remote_process_client.ReadTeamSize();
+void Runner::Setup() {
+    remote_process_client.WriteToken(token);
+    team_size = remote_process_client.ReadTeamSize();
 
-    vector<Strategy*> strategies;
-    vector<TankType> tank_types;
-
-	for (int strategy_index = 0; strategy_index < team_size; ++strategy_index) {
+    for (int strategy_index = 0; strategy_index < team_size; ++strategy_index) {
         Strategy* strategy = new MyStrategy;
-		strategies.push_back(strategy);
-		tank_types.push_back(strategy->SelectTank(strategy_index, team_size));
+        strategies.push_back(strategy);
+        tank_types.push_back(strategy->SelectTank(strategy_index, team_size));
     }
 
     remote_process_client.WriteSelectedTanks(tank_types);
+}
 
-    PlayerContext* player_context;
+void Runner::Run() {
 
-    while ((player_context = remote_process_client.ReadPlayerContext()) != NULL) {
-        vector<Tank> player_tanks = player_context->tanks();
-        if (player_tanks.size() != team_size) {
-            break;
-        }
+    PlayerContext* player_context = remote_process_client.ReadPlayerContext();
+    // if (player_context == NULL) flag_shutdown = true;
 
-        vector<Move> moves;
-
-        for (int strategy_index = 0; strategy_index < team_size; ++strategy_index) {
-            Move move;
-            strategies[strategy_index]->Move(player_tanks[strategy_index], player_context->world(), move);
-			moves.push_back(move);
-        }
-
-        remote_process_client.WriteMoves(moves);
-
-		delete player_context;
+    vector<Tank> player_tanks = player_context->tanks();
+    if (player_tanks.size() != team_size) {
+        return;
     }
 
-	for (int strategy_index = 0; strategy_index < team_size; ++strategy_index) {
-		delete strategies[strategy_index];
-	}
+    vector<Move> moves;
+
+    for (int strategy_index = 0; strategy_index < team_size; ++strategy_index) {
+        Move move;
+        strategies[strategy_index]->Move(player_tanks[strategy_index],
+                player_context->world(), move);
+        moves.push_back(move);
+    }
+
+    remote_process_client.WriteMoves(moves);
+
+    delete player_context;
+
+}
+
+Runner::~Runner() {
+
+    for (int strategy_index = 0; strategy_index < team_size; ++strategy_index) {
+        delete strategies[strategy_index];
+    }
+
 }
